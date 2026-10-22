@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GreenBooks — Malawi Secondary Library</title>
+
+<style>
+:root {
+  --green-1:#0b2e13; --green-2:#0f4d1f; --green-3:#1f8a3b;
+  --green-4:#7bdc8b; --green-5:#3fce5e;
+  --glass-bg:rgba(20,80,40,.28); --glass-bg-hover:rgba(30,110,55,.38);
+  --glass-brd:rgba(150,255,180,.25); --glass-brd-hover:rgba(150,255,180,.45);
+  --text:#eafff0; --muted:#b6e6c4;
+  --shadow:0 10px 30px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08);
+  --radius:18px; --radius-sm:12px;
+}
+* { box-sizing:border-box; margin:0; padding:0; font-family:'Segoe UI',system-ui,-apple-system,sans-serif; }
+body {
+  min-height:100vh; color:var(--text);
+  background:
+    radial-gradient(1200px 600px at 10% 0%,#1f8a3b55,transparent 60%),
+    radial-gradient(900px 500px at 90% 10%,#7bdc8b33,transparent 60%),
+    radial-gradient(800px 500px at 50% 100%,#3fce5e22,transparent 60%),
+    linear-gradient(160deg,#06200d,#0b2e13 40%,#0f4d1f 100%);
+  background-attachment:fixed; padding:16px; overflow-x:hidden;
+}
+body::before {
+  content:""; position:fixed; inset:0;
+  background:
+    repeating-linear-gradient(90deg,transparent 0 40px,rgba(123,220,139,.025) 40px 41px),
+    repeating-linear-gradient(0deg,transparent 0 40px,rgba(123,220,139,.015) 40px 41px);
+  pointer-events:none; z-index:0;
+}
+body > * { position:relative; z-index:1; }
+.glass {
+  background:var(--glass-bg); border:1px solid var(--glass-brd);
+  backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%);
+  border-radius:var(--radius); box-shadow:var(--shadow);
+}
+.nav { display:flex; flex-wrap:wrap; gap:12px; align-items:center; padding:12px 16px; margin-bottom:16px; position:sticky; top:12px; z-index:50; }
+.logo { font-weight:800; font-size:1.25rem; letter-spacing:.5px; white-space:nowrap; }
+.logo span { color:var(--green-4); }
+.search-wrap { display:flex; gap:8px; flex:1; min-width:220px; }
+.search-wrap input, .search-wrap select {
+  background:rgba(255,255,255,.08); border:1px solid var(--glass-brd);
+  color:var(--text); padding:10px 12px; border-radius:var(--radius-sm); outline:none; font-size:.9rem; transition:.2s;
+}
+.search-wrap input:focus, .search-wrap select:focus { border-color:var(--glass-brd-hover); background:rgba(255,255,255,.12); }
+.search-wrap input { flex:1; min-width:0; }
+.search-wrap input::placeholder { color:var(--muted); }
+.search-wrap select option { background:#0b2e13; color:var(--text); }
+.nav-actions { display:flex; gap:8px; }
+.btn { cursor:pointer; border:none; border-radius:var(--radius-sm); padding:10px 16px; font-weight:600; font-size:.9rem; transition:.2s; white-space:nowrap; }
+.btn.solid { background:linear-gradient(135deg,var(--green-5),var(--green-3)); color:#04230c; box-shadow:0 6px 20px #3fce5e55; }
+.btn.solid:hover { transform:translateY(-2px); box-shadow:0 10px 26px #3fce5e77; }
+.btn.ghost { background:rgba(255,255,255,.08); color:var(--text); border:1px solid var(--glass-brd); }
+.btn.ghost:hover { background:rgba(255,255,255,.15); border-color:var(--glass-brd-hover); }
+.btn.full { width:100%; margin-top:8px; }
+.btn:disabled { opacity:.5; cursor:not-allowed; }
+.hero { padding:36px 24px; text-align:center; margin-bottom:16px; }
+.hero h1 { font-size:clamp(1.6rem,3vw,2.6rem); line-height:1.2; }
+.hero h1 span { color:var(--green-4); }
+.hero p { color:var(--muted); margin-top:8px; font-size:.95rem; }
+.hero-stats { display:flex; justify-content:center; gap:32px; margin-top:20px; flex-wrap:wrap; }
+.hero-stats div { text-align:center; }
+.hero-stats strong { font-size:1.6rem; color:var(--green-4); display:block; }
+.hero-stats small { color:var(--muted); font-size:.8rem; }
+.tabs { display:flex; gap:8px; padding:10px; margin-bottom:16px; flex-wrap:wrap; }
+.tab { background:transparent; border:1px solid var(--glass-brd); color:var(--text); padding:8px 16px; border-radius:999px; cursor:pointer; font-weight:600; font-size:.85rem; transition:.2s; }
+.tab:hover { background:rgba(255,255,255,.08); }
+.tab.active { background:linear-gradient(135deg,var(--green-5),var(--green-3)); color:#04230c; border-color:transparent; box-shadow:0 4px 14px #3fce5e55; }
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; margin-bottom:24px; }
+.card { background:var(--glass-bg); border:1px solid var(--glass-brd); backdrop-filter:blur(16px) saturate(140%); -webkit-backdrop-filter:blur(16px) saturate(140%); border-radius:var(--radius); overflow:hidden; display:flex; flex-direction:column; transition:.25s; box-shadow:0 6px 20px rgba(0,0,0,.25); }
+.card:hover { transform:translateY(-4px); box-shadow:0 15px 40px #3fce5e33; border-color:var(--glass-brd-hover); background:var(--glass-bg-hover); }
+.card .cover { height:150px; background:linear-gradient(135deg,#1f8a3b,#0b2e13); display:flex; align-items:center; justify-content:center; font-size:2.5rem; position:relative; overflow:hidden; }
+.card .cover::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,transparent 60%,rgba(0,0,0,.25)); pointer-events:none; }
+.card .cover img { width:100%; height:100%; object-fit:cover; position:absolute; inset:0; }
+.card .body { padding:12px; display:flex; flex-direction:column; gap:6px; flex:1; }
+.card h4 { font-size:1rem; line-height:1.3; overflow-wrap:anywhere; }
+.card .meta { font-size:.8rem; color:var(--muted); }
+.card .badge { align-self:flex-start; background:rgba(123,220,139,.2); color:var(--green-4); font-size:.7rem; font-weight:700; padding:2px 8px; border-radius:999px; letter-spacing:.5px; }
+.card .actions { display:flex; gap:6px; margin-top:auto; padding-top:8px; }
+.card .actions .btn { flex:1; padding:8px; font-size:.85rem; }
+.loading { grid-column:1/-1; text-align:center; color:var(--muted); padding:40px; font-size:1rem; }
+.spinner { display:inline-block; width:24px; height:24px; border:3px solid rgba(255,255,255,.15); border-top-color:var(--green-4); border-radius:50%; animation:spin .8s linear infinite; margin-bottom:10px; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.modal { display:none; position:fixed; inset:0; margin:auto; z-index:100; padding:20px; max-width:900px; max-height:90vh; flex-direction:column; }
+.modal.open { display:flex; }
+.modal-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:12px; }
+.modal-head h3 { font-size:1.1rem; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.modal-head .close { background:rgba(255,255,255,.1); border:1px solid var(--glass-brd); color:var(--text); font-size:1rem; cursor:pointer; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+#readerFrame { flex:1; width:100%; min-height:60vh; border:none; border-radius:var(--radius-sm); background:#fff; }
+.paywall { max-width:380px; text-align:center; padding:28px; }
+.paywall h3 { margin-bottom:6px; font-size:1.3rem; }
+.paywall p { color:var(--muted); font-size:.9rem; }
+.price { font-size:2.2rem; font-weight:800; color:var(--green-4); margin:14px 0; }
+.price small { font-size:.9rem; color:var(--muted); font-weight:400; }
+.paywall ul { list-style:none; text-align:left; margin:14px 0; color:var(--muted); font-size:.9rem; display:grid; gap:8px; }
+.paywall ul li { display:flex; align-items:center; gap:8px; }
+.ref-box { background:rgba(0,0,0,.25); padding:10px; border-radius:var(--radius-sm); font-family:monospace; font-size:.9rem; margin:10px 0; word-break:break-all; }
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(100px); background:linear-gradient(135deg,var(--green-5),var(--green-3)); color:#04230c; padding:12px 22px; border-radius:var(--radius-sm); font-weight:700; font-size:.9rem; opacity:0; transition:.35s; z-index:200; box-shadow:0 10px 30px #3fce5e55; max-width:90vw; text-align:center; }
+.toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+.auth-form { display:grid; gap:10px; }
+.auth-form label { display:block; text-align:left; color:var(--muted); font-size:.85rem; }
+.auth-form input { width:100%; margin-top:5px; padding:11px 12px; border-radius:var(--radius-sm); border:1px solid var(--glass-brd); background:rgba(255,255,255,.08); color:var(--text); outline:none; }
+.auth-form input::placeholder { color:var(--muted); }
+.auth-note { font-size:.82rem; color:var(--muted); margin:8px 0; overflow-wrap:anywhere; }
+footer { text-align:center; padding:20px; color:var(--muted); font-size:.85rem; margin-top:20px; }
+footer .small { font-size:.75rem; opacity:.7; margin-top:4px; }
+@media(max-width:700px) {
+  .search-wrap { flex-direction:column; width:100%; }
+  .nav-actions { width:100%; }
+  .nav-actions .btn { flex:1; }
+  .hero { padding:24px 16px; }
+  .hero-stats { gap:20px; }
+  .grid { grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; }
+  .card .cover { height:120px; font-size:2rem; }
+}
+@media(max-width:400px) {
+  .grid { grid-template-columns:1fr 1fr; }
+  .card h4 { font-size:.85rem; }
+  .card .actions .btn { font-size:.75rem; padding:6px; }
+}
+</style>
+</head>
+
+<body>
+<header class="nav glass">
+  <div class="logo">🌿 Green<span>Books</span></div>
+
+  <div class="search-wrap">
+    <input id="search" type="text" placeholder="Search books, subject, form...">
+    <select id="formFilter">
+      <option value="">All Forms</option>
+      <option value="1">Form 1</option>
+      <option value="2">Form 2</option>
+      <option value="3">Form 3</option>
+      <option value="4">Form 4</option>
+    </select>
+    <select id="subjectFilter">
+      <option value="">All Subjects</option>
+      <option>English</option><option>Chichewa</option><option>Mathematics</option>
+      <option>Biology</option><option>Agriculture</option><option>Chemistry</option>
+      <option>Physics</option><option>Geography</option><option>History</option>
+      <option>Social Studies</option>
+    </select>
+  </div>
+
+  <div class="nav-actions">
+    <button id="loginBtn" class="btn ghost">Login</button>
+    <button id="signupBtn" class="btn solid">Sign Up</button>
+  </div>
+</header>
+
+<section class="hero glass">
+  <h1>Read &amp; Download <span>Secondary Books</span></h1>
+  <p>Form 1 – Form 4 • 10 subjects • Read online free, download with a 500/month plan</p>
+  <div class="hero-stats">
+    <div><strong id="statBooks">0</strong><small>Books</small></div>
+    <div><strong>4</strong><small>Forms</small></div>
+    <div><strong>10</strong><small>Subjects</small></div>
+  </div>
+</section>
+
+<div class="tabs glass">
+  <button class="tab active" data-form="">All</button>
+  <button class="tab" data-form="1">Form 1</button>
+  <button class="tab" data-form="2">Form 2</button>
+  <button class="tab" data-form="3">Form 3</button>
+  <button class="tab" data-form="4">Form 4</button>
+</div>
+
+<main class="grid" id="bookGrid">
+  <div class="loading">Loading books…</div>
+</main>
+
+<div class="modal glass" id="readerModal">
+  <div class="modal-head">
+    <h3 id="readerTitle">Book</h3>
+    <button class="close" id="readerClose" aria-label="Close reader">✕</button>
+  </div>
+  <iframe id="readerFrame" src="" title="Book Reader"></iframe>
+</div>
+
+<div class="modal glass paywall" id="paywallModal">
+  <h3>🔒 Download Locked</h3>
+  <p>Downloads require an active plan.</p>
+  <div class="price">MK 500 <small>/ month</small></div>
+  <ul>
+    <li>✅ Unlimited downloads</li>
+    <li>✅ All forms &amp; subjects</li>
+    <li>✅ Offline reading</li>
+  </ul>
+  <button class="btn solid full" id="payNow">Get Payment Reference</button>
+  <button class="btn ghost full" id="payCancel">Cancel</button>
+  <p class="auth-note" id="payNote">A payment reference will be generated. Send it to the admin to activate your plan.</p>
+</div>
+
+<div class="modal glass paywall" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+  <div class="modal-head">
+    <h3 id="authTitle">Login</h3>
+    <button class="close" id="authClose" aria-label="Close login">✕</button>
+  </div>
+
+  <form id="authForm" class="auth-form">
+    <label id="nameLabel" hidden>
+      Full name
+      <input id="authName" autocomplete="name" placeholder="Your name">
+    </label>
+    <label>
+      Email
+      <input id="authEmail" type="email" autocomplete="email" required placeholder="you@example.com">
+    </label>
+    <label>
+      Password
+      <input id="authPassword" type="password" autocomplete="current-password" required minlength="6" placeholder="At least 6 characters">
+    </label>
+    <button class="btn solid full" id="authSubmit" type="submit">Login</button>
+  </form>
+
+  <p class="auth-note" id="authSwitchText">No account? Create one.</p>
+  <button class="btn ghost full" id="authSwitch">Switch to Sign Up</button>
+  <button class="btn ghost full" id="logoutBtn" hidden>Log out</button>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<footer class="glass">
+  <p>© 2025 GreenBooks • Educational resources for Malawi secondary students</p>
+  <p class="small">Only free/legal textbooks are hosted. Contact us to report content.</p>
+</footer>
+
+<script>
+/* ============================================================
+   CHANGE THIS IF YOUR RENDER URL IS DIFFERENT.
+   Keep /api at the end.
+   ============================================================ */
+const API_BASE = "https://kb-yaza-server-js.onrender.com/api";
+
+const API = {
+  BOOKS: `${API_BASE}/books`,
+  LOGIN: `${API_BASE}/auth/login`,
+  REGISTER: `${API_BASE}/auth/register`,
+  ME: `${API_BASE}/auth/me`,
+  PAY: `${API_BASE}/payments/create`
+};
+
+let allBooks = [];
+let activeForm = "";
+let user = null;
+let authMode = "login";
+let toastTimer = null;
+
+function toast(message) {
+  const el = document.getElementById("toast");
+  el.textContent = String(message || "");
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 3500);
+}
+
+function safeReadUser() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("gb_user") || "null");
+    return saved && typeof saved === "object" && saved.token ? saved : null;
+  } catch { return null; }
+}
+
+function saveUser(nextUser) {
+  user = nextUser;
+  if (user) localStorage.setItem("gb_user", JSON.stringify(user));
+  else localStorage.removeItem("gb_user");
+  updateAuthButtons();
+}
+
+function updateAuthButtons() {
+  const loginBtn = document.getElementById("loginBtn");
+  const signupBtn = document.getElementById("signupBtn");
+  if (user) {
+    loginBtn.textContent = "Account";
+    signupBtn.textContent = "Log Out";
+  } else {
+    loginBtn.textContent = "Login";
+    signupBtn.textContent = "Sign Up";
+  }
+}
+
+async function apiJson(url, options = {}) {
+  const response = await fetch(url, options);
+  let data = {};
+  try { data = await response.json(); }
+  catch { throw new Error(`Server returned an invalid response (HTTP ${response.status}).`); }
+  if (!response.ok) throw new Error(data.message || `Request failed (HTTP ${response.status}).`);
+  return data;
+}
+
+async function loadBooks() {
+  const grid = document.getElementById("bookGrid");
+  grid.innerHTML = '<div class="loading"><div class="spinner"></div><br>Loading books…</div>';
+
+  try {
+    const data = await apiJson(API.BOOKS);
+    if (!Array.isArray(data)) throw new Error("The books endpoint did not return a list.");
+    allBooks = data;
+    document.getElementById("statBooks").textContent = allBooks.length;
+    applyFilters();
+    if (!allBooks.length) {
+      grid.innerHTML = '<div class="loading">📚 No books uploaded yet. Please check again later.</div>';
+    }
+  } catch (error) {
+    allBooks = [];
+    document.getElementById("statBooks").textContent = "0";
+    grid.innerHTML = '<div class="loading">⚠️ Could not load books from the server.<br><br>Check your backend URL and Render logs, then refresh.</div>';
+    toast(error.message || "Could not load books.");
+  }
+}
+
+function renderBooks(list) {
+  const grid = document.getElementById("bookGrid");
+  grid.replaceChildren();
+
+  if (!list.length) {
+    const empty = document.createElement("div");
+    empty.className = "loading";
+    empty.textContent = allBooks.length
+      ? "📭 No books match your search."
+      : "📚 No books uploaded yet.";
+    grid.appendChild(empty);
+    return;
+  }
+
+  list.forEach(book => {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const cover = document.createElement("div");
+    cover.className = "cover";
+    cover.textContent = "📘";
+
+    if (book.coverUrl) {
+      const img = document.createElement("img");
+      img.src = book.coverUrl;
+      img.alt = "";
+      img.loading = "lazy";
+      img.onerror = () => { img.remove(); cover.textContent = "📘"; };
+      cover.textContent = "";
+      cover.appendChild(img);
+    }
+
+    const body = document.createElement("div");
+    body.className = "body";
+
+    const badge = document.createElement("span");
+    badge.className = "badge";
+    badge.textContent = `Form ${book.form || ""}`;
+
+    const title = document.createElement("h4");
+    title.textContent = book.title || "Untitled book";
+
+    const subject = document.createElement("div");
+    subject.className = "meta";
+    subject.textContent = book.subject || "";
+
+    const actions = document.createElement("div");
+    actions.className = "actions";
+
+    const read = document.createElement("button");
+    read.className = "btn ghost";
+    read.textContent = "Read";
+    read.addEventListener("click", () => readBook(String(book._id)));
+
+    const download = document.createElement("button");
+    download.className = "btn solid";
+    download.textContent = "Download";
+    download.addEventListener("click", () => downloadBook(String(book._id)));
+
+    actions.append(read, download);
+    body.append(badge, title, subject, actions);
+    card.append(cover, body);
+    grid.appendChild(card);
+  });
+}
+
+async function readBook(id) {
+  try {
+    const data = await apiJson(`${API.BOOKS}/${encodeURIComponent(id)}/read`);
+    if (!data.url) throw new Error("The server did not return a reading link.");
+    const book = allBooks.find(b => String(b._id) === String(id));
+    document.getElementById("readerTitle").textContent = book?.title || "Book";
+    document.getElementById("readerFrame").src = data.url;
+    document.getElementById("readerModal").classList.add("open");
+  } catch (error) {
+    toast(error.message || "Could not open book.");
+  }
+}
+
+function closeReader() {
+  document.getElementById("readerFrame").src = "";
+  document.getElementById("readerModal").classList.remove("open");
+}
+function closePaywall() { document.getElementById("paywallModal").classList.remove("open"); }
+
+async function downloadBook(id) {
+  if (!user || !user.token) {
+    toast("Please log in first.");
+    openAuth("login");
+    return;
+  }
+
+  try {
+    const data = await apiJson(
+      `${API.BOOKS}/${encodeURIComponent(id)}/download`,
+      { headers: { Authorization: `Bearer ${user.token}` } }
+    );
+    if (!data.url) throw new Error("The server did not return a download link.");
+
+    const a = document.createElement("a");
+    a.href = data.url;
+    a.target = "_blank";
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    toast("Download started.");
+  } catch (error) {
+    const message = error.message || "Download failed.";
+    if (/active plan|subscription|payment/i.test(message)) {
+      document.getElementById("paywallModal").classList.add("open");
+    } else if (/token|log in|expired|unauthorized/i.test(message)) {
+      saveUser(null);
+      openAuth("login");
+      toast("Please log in again.");
+    } else {
+      toast(message);
+    }
+  }
+}
+
+function openAuth(mode) {
+  authMode = mode;
+  const modal = document.getElementById("authModal");
+  const nameLabel = document.getElementById("nameLabel");
+  const nameInput = document.getElementById("authName");
+  const title = document.getElementById("authTitle");
+  const submit = document.getElementById("authSubmit");
+  const switchText = document.getElementById("authSwitchText");
+  const switchBtn = document.getElementById("authSwitch");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const emailInput = document.getElementById("authEmail");
+  const passwordInput = document.getElementById("authPassword");
+
+  title.textContent = user && mode === "account" ? "Your Account"
+    : mode === "signup" ? "Create Account" : "Login";
+
+  nameLabel.hidden = mode !== "signup";
+  nameInput.required = mode === "signup";
+  nameInput.disabled = mode !== "signup";
+  emailInput.disabled = mode === "account";
+  passwordInput.disabled = mode === "account";
+  submit.hidden = mode === "account";
+  switchText.hidden = mode === "account";
+  switchBtn.hidden = mode === "account";
+  logoutBtn.hidden = !user;
+
+  switchBtn.textContent = mode === "signup" ? "Switch to Login" : "Switch to Sign Up";
+  switchText.textContent = mode === "signup"
+    ? "Already have an account? Log in."
+    : "No account? Create one.";
+
+  if (mode === "account" && user) {
+    switchText.hidden = false;
+    switchText.textContent =
+      `Signed in as ${user.email || "user"}${user.role === "admin" ? " (admin)" : ""}.`;
+  }
+
+  if (mode !== "account") {
+    emailInput.value = user?.email || "";
+    passwordInput.value = "";
+    if (mode === "signup") nameInput.value = "";
+  }
+
+  modal.classList.add("open");
+}
+
+function closeAuth() { document.getElementById("authModal").classList.remove("open"); }
+
+async function validateSavedLogin() {
+  const saved = safeReadUser();
+  if (!saved) { saveUser(null); return; }
+  try {
+    const data = await apiJson(API.ME, { headers: { Authorization: `Bearer ${saved.token}` } });
+    saveUser({ ...saved, ...(data.user || {}), token: saved.token });
+  } catch { saveUser(null); }
+}
+
+document.getElementById("authForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  const submit = document.getElementById("authSubmit");
+  const name = document.getElementById("authName").value.trim();
+  const email = document.getElementById("authEmail").value.trim();
+  const password = document.getElementById("authPassword").value;
+
+  const isSignup = authMode === "signup";
+  const endpoint = isSignup ? API.REGISTER : API.LOGIN;
+  const payload = isSignup ? { name, email, password } : { email, password };
+
+  submit.disabled = true;
+  submit.textContent = isSignup ? "Creating account…" : "Logging in…";
+
+  try {
+    const data = await apiJson(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (!data.token || !data.user) throw new Error("The server did not return a login token.");
+    saveUser({ ...data.user, token: data.token });
+    closeAuth();
+    toast(isSignup ? "Account created successfully." : "Logged in successfully.");
+  } catch (error) {
+    toast(error.message || "Authentication failed.");
+  } finally {
+    submit.disabled = false;
+    submit.textContent = isSignup ? "Create Account" : "Login";
+  }
+});
+
+document.getElementById("loginBtn").addEventListener("click", () => openAuth(user ? "account" : "login"));
+document.getElementById("signupBtn").addEventListener("click", () => {
+  if (user) { saveUser(null); toast("Logged out."); }
+  else openAuth("signup");
+});
+document.getElementById("authSwitch").addEventListener("click", () =>
+  openAuth(authMode === "signup" ? "login" : "signup"));
+document.getElementById("authClose").addEventListener("click", closeAuth);
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  saveUser(null); closeAuth(); toast("Logged out.");
+});
+document.getElementById("readerClose").addEventListener("click", closeReader);
+document.getElementById("payCancel").addEventListener("click", closePaywall);
+
+document.getElementById("payNow").addEventListener("click", async () => {
+  if (!user || !user.token) {
+    closePaywall(); openAuth("login"); toast("Please log in first."); return;
+  }
+
+  const button = document.getElementById("payNow");
+  const note = document.getElementById("payNote");
+  button.disabled = true;
+  button.textContent = "Please wait…";
+
+  try {
+    const data = await apiJson(API.PAY, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${user.token}` },
+      body: JSON.stringify({ amount: 500, currency: "MWK" })
+    });
+
+    if (data.reference) {
+      note.innerHTML = `Send this reference to the admin to activate your plan:<div class="ref-box">${data.reference}</div>Status: <strong>${data.status || "pending"}</strong>`;
+      toast("Reference created. Send it to the admin.");
+    } else {
+      toast(data.message || "Payment request received.");
+    }
+  } catch (error) {
+    toast(error.message || "Payment service unavailable.");
+  } finally {
+    button.disabled = false;
+    button.textContent = "Get Payment Reference";
+  }
+});
+
+function applyFilters() {
+  const q = document.getElementById("search").value.toLowerCase().trim();
+  const subject = document.getElementById("subjectFilter").value;
+
+  const list = allBooks.filter(book => {
+    const title = String(book.title || "").toLowerCase();
+    const subj = String(book.subject || "").toLowerCase();
+    return (
+      (activeForm === "" || String(book.form) === activeForm) &&
+      (!subject || book.subject === subject) &&
+      (!q || title.includes(q) || subj.includes(q) || `form ${book.form}`.includes(q))
+    );
+  });
+  renderBooks(list);
+}
+
+document.getElementById("search").addEventListener("input", applyFilters);
+document.getElementById("subjectFilter").addEventListener("change", applyFilters);
+document.getElementById("formFilter").addEventListener("change", event => {
+  activeForm = event.target.value;
+  document.querySelectorAll(".tab").forEach(tab => {
+    tab.classList.toggle("active", tab.dataset.form === activeForm);
+  });
+  applyFilters();
+});
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    activeForm = tab.dataset.form;
+    document.getElementById("formFilter").value = activeForm;
+    document.querySelectorAll(".tab").forEach(item => {
+      item.classList.toggle("active", item === tab);
+    });
+    applyFilters();
+  });
+});
+
+/* Start app */
+user = safeReadUser();
+updateAuthButtons();
+validateSavedLogin();
+loadBooks();
+</script>
+</body>
+</html>
